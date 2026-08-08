@@ -64,6 +64,7 @@ function categoryBadge(cat) {
         'MCU':        'badge-mcu',
         // Other
         'Module':     'badge-module',
+        'Sensor':     'badge-sensor',
         'Power':      'badge-power',
         'Display':    'badge-display',
         'Connector':  'badge-connector',
@@ -79,7 +80,7 @@ function categoryBadge(cat) {
         'Transistor': 'Transistor', 'MOSFET': 'MOSFET',
         'OpAmp': 'Op-Amp', 'ICLogic': 'IC Logic',
         'ICDriver': 'IC Driver', 'MCU': 'MCU / SoC',
-        'Module': 'Module', 'Power': 'Power IC',
+        'Module': 'Module', 'Sensor': 'Sensor', 'Power': 'Power IC',
         'Display': 'Display', 'Connector': 'Connector',
         'PCB': 'PCB', 'Board': 'Board', 'Tool': 'Tool', 'Other': 'Other'
     };
