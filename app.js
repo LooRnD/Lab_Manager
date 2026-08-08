@@ -68,6 +68,7 @@ function categoryBadge(cat) {
         'Display':    'badge-display',
         'Connector':  'badge-connector',
         'PCB':        'badge-pcb',
+        'Board':      'badge-board',
         'Tool':       'badge-tool',
         'Other':      'badge-other'
     };
@@ -80,7 +81,7 @@ function categoryBadge(cat) {
         'ICDriver': 'IC Driver', 'MCU': 'MCU / SoC',
         'Module': 'Module', 'Power': 'Power IC',
         'Display': 'Display', 'Connector': 'Connector',
-        'PCB': 'PCB', 'Tool': 'Tool', 'Other': 'Other'
+        'PCB': 'PCB', 'Board': 'Board', 'Tool': 'Tool', 'Other': 'Other'
     };
     return `<span class="badge ${map[cat] || 'badge-other'}">${labels[cat] || cat}</span>`;
 }
