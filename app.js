@@ -48,12 +48,41 @@ function toast(msg, type = 'success') {
 
 function categoryBadge(cat) {
     const map = {
-        'MCU': 'badge-mcu', 'Passive': 'badge-passive',
-        'Module': 'badge-module', 'Power': 'badge-power',
-        'Display': 'badge-display', 'Connector': 'badge-connector',
-        'Other': 'badge-other'
+        // Passive
+        'Resistor':   'badge-resistor',
+        'Capacitor':  'badge-capacitor',
+        'Inductor':   'badge-inductor',
+        'Crystal':    'badge-crystal',
+        // Active
+        'Diode':      'badge-diode',
+        'LED':        'badge-led',
+        'Transistor': 'badge-transistor',
+        'MOSFET':     'badge-mosfet',
+        'OpAmp':      'badge-opamp',
+        'ICLogic':    'badge-iclogic',
+        'ICDriver':   'badge-icdriver',
+        'MCU':        'badge-mcu',
+        // Other
+        'Module':     'badge-module',
+        'Power':      'badge-power',
+        'Display':    'badge-display',
+        'Connector':  'badge-connector',
+        'PCB':        'badge-pcb',
+        'Tool':       'badge-tool',
+        'Other':      'badge-other'
     };
-    return `<span class="badge ${map[cat] || 'badge-other'}">${cat}</span>`;
+    const labels = {
+        'Resistor': 'Resistor', 'Capacitor': 'Capacitor',
+        'Inductor': 'Inductor', 'Crystal': 'Crystal',
+        'Diode': 'Diode', 'LED': 'LED',
+        'Transistor': 'Transistor', 'MOSFET': 'MOSFET',
+        'OpAmp': 'Op-Amp', 'ICLogic': 'IC Logic',
+        'ICDriver': 'IC Driver', 'MCU': 'MCU / SoC',
+        'Module': 'Module', 'Power': 'Power IC',
+        'Display': 'Display', 'Connector': 'Connector',
+        'PCB': 'PCB', 'Tool': 'Tool', 'Other': 'Other'
+    };
+    return `<span class="badge ${map[cat] || 'badge-other'}">${labels[cat] || cat}</span>`;
 }
 
 function statusBadge(s) {

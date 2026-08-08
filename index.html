@@ -137,13 +137,31 @@
                 </div>
                 <select class="sel" id="inv-filter-cat">
                     <option value="all">All Categories</option>
-                    <option value="MCU">MCU / SoC</option>
-                    <option value="Passive">Passive (R/C/L)</option>
-                    <option value="Module">Module / Sensor</option>
-                    <option value="Power">Power</option>
-                    <option value="Display">Display</option>
-                    <option value="Connector">Connector</option>
-                    <option value="Other">Other</option>
+                    <optgroup label="── Passive ──">
+                        <option value="Resistor">Resistor (Trở)</option>
+                        <option value="Capacitor">Capacitor (Tụ)</option>
+                        <option value="Inductor">Inductor (Cuộn cảm)</option>
+                        <option value="Crystal">Crystal / Oscillator</option>
+                    </optgroup>
+                    <optgroup label="── Active ──">
+                        <option value="Diode">Diode</option>
+                        <option value="LED">LED</option>
+                        <option value="Transistor">Transistor (BJT)</option>
+                        <option value="MOSFET">MOSFET</option>
+                        <option value="OpAmp">Op-Amp</option>
+                        <option value="ICLogic">IC Logic</option>
+                        <option value="ICDriver">IC Driver</option>
+                        <option value="MCU">MCU / SoC</option>
+                    </optgroup>
+                    <optgroup label="── Other ──">
+                        <option value="Module">Module / Sensor</option>
+                        <option value="Power">Power IC / LDO</option>
+                        <option value="Display">Display</option>
+                        <option value="Connector">Connector</option>
+                        <option value="PCB">PCB / Board</option>
+                        <option value="Tool">Tool / Equipment</option>
+                        <option value="Other">Other</option>
+                    </optgroup>
                 </select>
                 <button class="btn btn-primary" id="btn-add-item">
                     <i class="fa-solid fa-plus"></i> Add Component
@@ -292,13 +310,31 @@
                     <div class="form-group">
                         <label for="item-category">Category</label>
                         <select id="item-category" required class="sel">
-                            <option value="MCU">MCU / SoC</option>
-                            <option value="Passive">Passive (R/C/L)</option>
-                            <option value="Module">Module / Sensor</option>
-                            <option value="Power">Power</option>
-                            <option value="Display">Display</option>
-                            <option value="Connector">Connector</option>
-                            <option value="Other">Other</option>
+                            <optgroup label="── Passive ──">
+                                <option value="Resistor">Resistor (Trở)</option>
+                                <option value="Capacitor">Capacitor (Tụ)</option>
+                                <option value="Inductor">Inductor (Cuộn cảm)</option>
+                                <option value="Crystal">Crystal / Oscillator</option>
+                            </optgroup>
+                            <optgroup label="── Active ──">
+                                <option value="Diode">Diode</option>
+                                <option value="LED">LED</option>
+                                <option value="Transistor">Transistor (BJT)</option>
+                                <option value="MOSFET">MOSFET</option>
+                                <option value="OpAmp">Op-Amp</option>
+                                <option value="ICLogic">IC Logic</option>
+                                <option value="ICDriver">IC Driver</option>
+                                <option value="MCU">MCU / SoC</option>
+                            </optgroup>
+                            <optgroup label="── Other ──">
+                                <option value="Module">Module / Sensor</option>
+                                <option value="Power">Power IC / LDO</option>
+                                <option value="Display">Display</option>
+                                <option value="Connector">Connector</option>
+                                <option value="PCB">PCB / Board</option>
+                                <option value="Tool">Tool / Equipment</option>
+                                <option value="Other">Other</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>

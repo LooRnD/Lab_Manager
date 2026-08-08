@@ -536,13 +536,31 @@ body {
     white-space: nowrap;
 }
 
-.badge-mcu      { background: var(--c-purple-dim); color: var(--c-purple); }
-.badge-passive  { background: var(--c-blue-dim);   color: var(--c-blue);   }
-.badge-module   { background: var(--c-green-dim);  color: var(--c-green);  }
-.badge-power    { background: rgba(227,179,65,.15); color: var(--c-orange); }
-.badge-display  { background: rgba(88,166,255,.1);  color: var(--c-blue);   }
-.badge-connector{ background: var(--c-surface2);   color: var(--c-muted);  }
-.badge-other    { background: var(--c-surface2);   color: var(--c-muted);  }
+/* --- Passive --- */
+.badge-resistor  { background: rgba(251,146, 60,.15); color: #fb923c; }
+.badge-capacitor { background: rgba( 59,130,246,.15); color: #3b82f6; }
+.badge-inductor  { background: rgba( 99,102,241,.15); color: #6366f1; }
+.badge-crystal   { background: rgba(148,163,184,.15); color: #94a3b8; }
+/* --- Active --- */
+.badge-diode     { background: rgba(248, 81, 73,.15); color: #f85149; }
+.badge-led       { background: rgba(255,215,  0,.15); color: #d4a900; }
+.badge-transistor{ background: rgba(163,113,247,.15); color: #a371f7; }
+.badge-mosfet    { background: rgba(139, 92,246,.15); color: #8b5cf6; }
+.badge-opamp     { background: rgba( 20,184,166,.15); color: #14b8a6; }
+.badge-iclogic   { background: rgba( 16,185,129,.15); color: #10b981; }
+.badge-icdriver  { background: rgba( 52,211,153,.15); color: #34d399; }
+.badge-mcu       { background: rgba(163,113,247,.15); color: #a371f7; }
+/* --- Other --- */
+.badge-module    { background: rgba( 63,185, 80,.15); color: #3fb950; }
+.badge-power     { background: rgba(227,179, 65,.15); color: #e3b341; }
+.badge-display   { background: rgba( 88,166,255,.15); color: #58a6ff; }
+.badge-connector { background: rgba(139,148,158,.15); color: #8b949e; }
+.badge-pcb       { background: rgba( 34,211,238,.15); color: #22d3ee; }
+.badge-tool      { background: rgba(156,163,175,.15); color: #9ca3af; }
+.badge-other     { background: rgba(139,148,158,.15); color: #8b949e; }
+/* --- Legacy --- */
+.badge-passive   { background: rgba( 59,130,246,.15); color: #3b82f6; }
+
 
 .badge-low { background: var(--c-red-dim); color: var(--c-red); }
 .badge-ok  { background: var(--c-green-dim); color: var(--c-green); }
