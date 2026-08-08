@@ -179,12 +179,12 @@ document.querySelectorAll('[data-close]').forEach(btn => {
     btn.addEventListener('click', () => closeModal(btn.dataset.close));
 });
 
-// Click overlay to close
-document.querySelectorAll('.modal-overlay').forEach(ov => {
-    ov.addEventListener('click', e => {
-        if (e.target === ov) ov.classList.remove('active');
-    });
-});
+// Click overlay to close (DISABLED to prevent accidental data loss)
+// document.querySelectorAll('.modal-overlay').forEach(ov => {
+//     ov.addEventListener('click', e => {
+//         if (e.target === ov) ov.classList.remove('active');
+//     });
+// });
 
 // =============================================
 // FIRESTORE — INVENTORY
