@@ -393,21 +393,11 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="proj-revenue">Revenue (VND)</label>
-                        <input type="number" id="proj-revenue" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="proj-cost">Total Cost (VND)</label>
-                        <input type="number" id="proj-cost" min="0" value="0">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="proj-vat">VAT Invoice Issued</label>
-                        <select id="proj-vat" class="sel">
-                            <option value="0">No VAT invoice</option>
-                            <option value="8">Yes — 8%</option>
-                            <option value="10">Yes — 10%</option>
+                        <label for="proj-type">Project Type</label>
+                        <select id="proj-type" class="sel">
+                            <option value="fixed">Fixed Price</option>
+                            <option value="hourly">Hourly Rate</option>
+                            <option value="parttime">Part-time</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -418,6 +408,24 @@
                             <option value="paused">Paused</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="proj-revenue">Revenue (VND)</label>
+                        <input type="number" id="proj-revenue" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="proj-cost">Total Cost (VND)</label>
+                        <input type="number" id="proj-cost" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="proj-vat">VAT Invoice Issued</label>
+                    <select id="proj-vat" class="sel">
+                        <option value="0">No VAT invoice</option>
+                        <option value="8">Yes — 8%</option>
+                        <option value="10">Yes — 10%</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="proj-desc">Description (optional)</label>

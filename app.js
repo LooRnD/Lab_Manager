@@ -367,6 +367,7 @@ document.getElementById('form-project').addEventListener('submit', async e => {
         cost:    parseFloat(document.getElementById('proj-cost').value) || 0,
         vatRate: vatRate,
         vatAmt:  vatAmt,
+        type:    document.getElementById('proj-type').value,
         status:  document.getElementById('proj-status').value,
         desc:    document.getElementById('proj-desc').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -397,6 +398,7 @@ function editProject(id) {
     document.getElementById('proj-revenue').value= p.revenue || 0;
     document.getElementById('proj-cost').value   = p.cost    || 0;
     document.getElementById('proj-vat').value    = p.vatRate || 0;
+    document.getElementById('proj-type').value   = p.type    || 'fixed';
     document.getElementById('proj-status').value = p.status  || 'active';
     document.getElementById('proj-desc').value   = p.desc    || '';
     openModal('modal-project');
@@ -438,6 +440,11 @@ function renderProjects() {
     data.forEach(p => {
         const profit = (p.revenue || 0) - (p.cost || 0);
         const vat    = p.vatAmt || 0;
+        
+        let typeBadge = '';
+        if (p.type === 'hourly') typeBadge = '<span class="badge badge-hourly"><i class="fa-solid fa-clock"></i> Hourly</span>';
+        else if (p.type === 'parttime') typeBadge = '<span class="badge badge-parttime"><i class="fa-solid fa-calendar-week"></i> Part-time</span>';
+        else typeBadge = '<span class="badge badge-fixed"><i class="fa-solid fa-box"></i> Fixed Price</span>';
 
         const card = document.createElement('div');
         card.className = 'project-card';
@@ -448,9 +455,12 @@ function renderProjects() {
                     <div class="proj-client">${p.client ? `👤 ${p.client}` : 'No client'}</div>
                     ${p.desc ? `<div style="font-size:12px;color:var(--c-muted);margin-top:4px">${p.desc}</div>` : ''}
                 </div>
-                <div>
-                    ${statusBadge(p.status)}
-                    <div class="proj-actions" style="margin-top:8px">
+                <div style="text-align:right">
+                    <div style="display:flex;gap:4px;flex-direction:column;align-items:flex-end">
+                        ${statusBadge(p.status)}
+                        ${typeBadge}
+                    </div>
+                    <div class="proj-actions" style="margin-top:8px;justify-content:flex-end">
                         <button class="btn-icon edit" onclick="editProject('${p.id}')" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </button>

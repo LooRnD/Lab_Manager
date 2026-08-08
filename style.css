@@ -571,6 +571,10 @@ body {
 .badge-completed { background: var(--c-green-dim);  color: var(--c-green);  }
 .badge-paused    { background: rgba(227,179,65,.15); color: var(--c-orange); }
 
+.badge-fixed     { background: rgba(139,148,158,.15); color: #8b949e; }
+.badge-hourly    { background: rgba( 34,211,238,.15); color: #22d3ee; }
+.badge-parttime  { background: rgba(236, 72,153,.15); color: #ec4899; }
+
 /* ========= EMPTY STATE ========= */
 .empty-state {
     text-align: center;
