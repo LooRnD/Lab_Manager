@@ -52,37 +52,50 @@ function categoryBadge(cat) {
         'Resistor':   'badge-resistor',
         'Capacitor':  'badge-capacitor',
         'Inductor':   'badge-inductor',
+        'Transformer':'badge-transformer',
         'Crystal':    'badge-crystal',
+        'Fuse':       'badge-fuse',
         // Active
         'Diode':      'badge-diode',
         'LED':        'badge-led',
         'Transistor': 'badge-transistor',
         'MOSFET':     'badge-mosfet',
+        'Optocoupler':'badge-optocoupler',
         'OpAmp':      'badge-opamp',
         'ICLogic':    'badge-iclogic',
         'ICDriver':   'badge-icdriver',
+        'Memory':     'badge-memory',
         'MCU':        'badge-mcu',
-        // Other
+        'Power':      'badge-power',
+        // Modules
         'Module':     'badge-module',
         'Sensor':     'badge-sensor',
-        'Power':      'badge-power',
+        'Wireless':   'badge-wireless',
         'Display':    'badge-display',
+        // Electro
+        'Relay':      'badge-relay',
+        'Switch':     'badge-switch',
+        'Motor':      'badge-motor',
         'Connector':  'badge-connector',
+        // Hardware
+        'Battery':    'badge-battery',
         'PCB':        'badge-pcb',
         'Board':      'badge-board',
+        'Wire':       'badge-wire',
+        'Consumable': 'badge-consumable',
         'Tool':       'badge-tool',
         'Other':      'badge-other'
     };
     const labels = {
-        'Resistor': 'Resistor', 'Capacitor': 'Capacitor',
-        'Inductor': 'Inductor', 'Crystal': 'Crystal',
-        'Diode': 'Diode', 'LED': 'LED',
-        'Transistor': 'Transistor', 'MOSFET': 'MOSFET',
-        'OpAmp': 'Op-Amp', 'ICLogic': 'IC Logic',
-        'ICDriver': 'IC Driver', 'MCU': 'MCU / SoC',
-        'Module': 'Module', 'Sensor': 'Sensor', 'Power': 'Power IC',
-        'Display': 'Display', 'Connector': 'Connector',
-        'PCB': 'PCB', 'Board': 'Board', 'Tool': 'Tool', 'Other': 'Other'
+        'Resistor': 'Resistor', 'Capacitor': 'Capacitor', 'Inductor': 'Inductor', 
+        'Transformer': 'Transformer', 'Crystal': 'Crystal', 'Fuse': 'Fuse',
+        'Diode': 'Diode', 'LED': 'LED', 'Transistor': 'Transistor', 'MOSFET': 'MOSFET', 
+        'Optocoupler': 'Optocoupler', 'OpAmp': 'Op-Amp', 'ICLogic': 'IC Logic', 
+        'ICDriver': 'IC Driver', 'Memory': 'Memory', 'MCU': 'MCU', 'Power': 'Power IC',
+        'Module': 'Module', 'Sensor': 'Sensor', 'Wireless': 'Wireless', 'Display': 'Display',
+        'Relay': 'Relay', 'Switch': 'Switch', 'Motor': 'Motor', 'Connector': 'Connector',
+        'Battery': 'Battery', 'PCB': 'PCB', 'Board': 'Dev Board', 'Wire': 'Wire', 
+        'Consumable': 'Consumable', 'Tool': 'Tool', 'Other': 'Other'
     };
     return `<span class="badge ${map[cat] || 'badge-other'}">${labels[cat] || cat}</span>`;
 }
