@@ -370,8 +370,6 @@ document.getElementById('form-project').addEventListener('submit', async e => {
     e.preventDefault();
     const docId   = document.getElementById('proj-doc-id').value;
     const revenue = parseFloat(document.getElementById('proj-revenue').value) || 0;
-    const vatRate = parseInt(document.getElementById('proj-vat').value) || 0;
-    const vatAmt  = revenue * (vatRate / 100);
 
     const data = {
         name:    document.getElementById('proj-name').value.trim(),
@@ -379,8 +377,6 @@ document.getElementById('form-project').addEventListener('submit', async e => {
         revenue: revenue,
         clientAdvance: parseFloat(document.getElementById('proj-client-advance').value) || 0,
         cost:    parseFloat(document.getElementById('proj-cost').value) || 0,
-        vatRate: vatRate,
-        vatAmt:  vatAmt,
         type:    document.getElementById('proj-type').value,
         status:  document.getElementById('proj-status').value,
         completionDate: document.getElementById('proj-completion-date').value,
@@ -413,7 +409,6 @@ function editProject(id) {
     document.getElementById('proj-revenue').value= p.revenue || 0;
     document.getElementById('proj-client-advance').value= p.clientAdvance || 0;
     document.getElementById('proj-cost').value   = p.cost    || 0;
-    document.getElementById('proj-vat').value    = p.vatRate || 0;
     document.getElementById('proj-type').value   = p.type    || 'fixed';
     document.getElementById('proj-status').value = p.status  || 'active';
     document.getElementById('proj-completion-date').value = p.completionDate || '';
@@ -504,11 +499,6 @@ function renderProjects() {
                     <span class="label">Cost</span>
                     <span class="value" style="color:var(--c-red)">${fmt(p.cost)}</span>
                 </div>
-                ${vat > 0 ? `
-                <div class="fin-row">
-                    <span class="label">VAT (${p.vatRate}%)</span>
-                    <span class="value" style="color:var(--c-orange)">${fmt(vat)}</span>
-                </div>` : ''}
                 <div class="fin-row profit">
                     <span class="label">Profit</span>
                     <span class="value ${profit < 0 ? 'negative' : ''}">${fmt(profit)}</span>
@@ -640,13 +630,11 @@ function renderReports() {
 
     const totRevenue = filtered.reduce((s, p) => s + (p.revenue || 0), 0);
     const totCost    = filtered.reduce((s, p) => s + (p.cost    || 0), 0);
-    const totVat     = filtered.reduce((s, p) => s + (p.vatAmt  || 0), 0);
     const totProfit  = totRevenue - totCost;
 
     document.getElementById('rep-revenue').textContent = fmt(totRevenue);
     document.getElementById('rep-cost').textContent    = fmt(totCost);
     document.getElementById('rep-profit').textContent  = fmt(totProfit);
-    document.getElementById('rep-vat').textContent     = fmt(totVat);
 
     const tbody = document.getElementById('report-tbody');
     if (filtered.length === 0) {
@@ -663,7 +651,6 @@ function renderReports() {
             <td>${statusBadge(p.status)}</td>
             <td style="color:var(--c-green)">${fmt(p.revenue)}</td>
             <td style="color:var(--c-red)">${fmt(p.cost)}</td>
-            <td style="color:var(--c-orange)">${fmt(p.vatAmt)}</td>
             <td style="font-weight:600;color:${profit >= 0 ? 'var(--c-green)' : 'var(--c-red)'}">${fmt(profit)}</td>
         </tr>`;
     }).join('');
@@ -689,11 +676,10 @@ document.getElementById('btn-export-csv').addEventListener('click', () => {
         return true;
     });
 
-    const header = ['Project Name', 'Client', 'Status', 'Revenue (VND)', 'Cost (VND)', 'VAT Rate (%)', 'VAT Amount (VND)', 'Profit (VND)'];
+    const header = ['Project Name', 'Client', 'Status', 'Revenue (VND)', 'Cost (VND)', 'Profit (VND)'];
     const rows = filtered.map(p => [
         p.name, p.client || '', p.status,
         p.revenue || 0, p.cost || 0,
-        p.vatRate || 0, p.vatAmt || 0,
         (p.revenue || 0) - (p.cost || 0)
     ]);
 
