@@ -377,11 +377,13 @@ document.getElementById('form-project').addEventListener('submit', async e => {
         name:    document.getElementById('proj-name').value.trim(),
         client:  document.getElementById('proj-client').value.trim(),
         revenue: revenue,
+        clientAdvance: parseFloat(document.getElementById('proj-client-advance').value) || 0,
         cost:    parseFloat(document.getElementById('proj-cost').value) || 0,
         vatRate: vatRate,
         vatAmt:  vatAmt,
         type:    document.getElementById('proj-type').value,
         status:  document.getElementById('proj-status').value,
+        completionDate: document.getElementById('proj-completion-date').value,
         desc:    document.getElementById('proj-desc').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -409,10 +411,12 @@ function editProject(id) {
     document.getElementById('proj-name').value   = p.name    || '';
     document.getElementById('proj-client').value = p.client  || '';
     document.getElementById('proj-revenue').value= p.revenue || 0;
+    document.getElementById('proj-client-advance').value= p.clientAdvance || 0;
     document.getElementById('proj-cost').value   = p.cost    || 0;
     document.getElementById('proj-vat').value    = p.vatRate || 0;
     document.getElementById('proj-type').value   = p.type    || 'fixed';
     document.getElementById('proj-status').value = p.status  || 'active';
+    document.getElementById('proj-completion-date').value = p.completionDate || '';
     document.getElementById('proj-desc').value   = p.desc    || '';
     openModal('modal-project');
 }
@@ -459,6 +463,13 @@ function renderProjects() {
         else if (p.type === 'parttime') typeBadge = '<span class="badge badge-parttime"><i class="fa-solid fa-calendar-week"></i> Part-time</span>';
         else typeBadge = '<span class="badge badge-fixed"><i class="fa-solid fa-box"></i> Fixed Price</span>';
 
+        let advanceHtml = '';
+        if (p.clientAdvance > 0) {
+            advanceHtml = `<div style="font-size:12px; color:var(--c-orange); margin-top:2px;">
+                <i class="fa-solid fa-hand-holding-dollar"></i> Client Adv: ${fmt(p.clientAdvance)}
+            </div>`;
+        }
+
         const card = document.createElement('div');
         card.className = 'project-card';
         card.innerHTML = `
@@ -467,6 +478,7 @@ function renderProjects() {
                     <div class="proj-name">${p.name}</div>
                     <div class="proj-client">${p.client ? `👤 ${p.client}` : 'No client'}</div>
                     ${p.desc ? `<div style="font-size:12px;color:var(--c-muted);margin-top:4px">${p.desc}</div>` : ''}
+                    ${advanceHtml}
                 </div>
                 <div style="text-align:right">
                     <div style="display:flex;gap:4px;flex-direction:column;align-items:flex-end">
@@ -557,6 +569,60 @@ function renderDashboard() {
     }
 }
 
+function renderTaxReport() {
+    const tbody = document.getElementById('tax-report-tbody');
+    if (!tbody) return;
+    const taxRate = parseFloat(document.getElementById('tax-rate-select').value) / 100;
+
+    // Group projects by year
+    const yearlyData = {};
+    projectsData.forEach(p => {
+        let year = 'Unknown';
+        if (p.completionDate) {
+            year = p.completionDate.split('-')[0];
+        } else if (p.createdAt) {
+            year = new Date(p.createdAt.seconds * 1000).getFullYear().toString();
+        }
+        
+        if (!yearlyData[year]) {
+            yearlyData[year] = { rev: 0, adv: 0, taxable: 0 };
+        }
+        
+        const rev = p.revenue || 0;
+        const adv = p.clientAdvance || 0;
+        yearlyData[year].rev += rev;
+        yearlyData[year].adv += adv;
+        // Taxable Service Income = Total Revenue - Material Advance
+        yearlyData[year].taxable += Math.max(0, rev - adv);
+    });
+
+    tbody.innerHTML = '';
+    const years = Object.keys(yearlyData).sort((a,b) => b.localeCompare(a)); // desc
+    
+    if (years.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--c-muted)">No data available for tax reporting</td></tr>`;
+        return;
+    }
+
+    years.forEach(y => {
+        const d = yearlyData[y];
+        const taxAmt = d.taxable * taxRate;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${y}</strong></td>
+            <td>${fmt(d.rev)}</td>
+            <td style="color:var(--c-red)">-${fmt(d.adv)}</td>
+            <td style="font-weight:bold; color:var(--c-blue)">${fmt(d.taxable)}</td>
+            <td style="font-weight:bold; color:var(--c-orange)">${fmt(taxAmt)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Re-render tax when dropdown changes
+document.getElementById('tax-rate-select')?.addEventListener('change', renderTaxReport);
+
 // =============================================
 // RENDER REPORTS
 // =============================================
@@ -601,6 +667,8 @@ function renderReports() {
             <td style="font-weight:600;color:${profit >= 0 ? 'var(--c-green)' : 'var(--c-red)'}">${fmt(profit)}</td>
         </tr>`;
     }).join('');
+
+    renderTaxReport();
 }
 
 document.getElementById('report-year').addEventListener('change', renderReports);
