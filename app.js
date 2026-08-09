@@ -374,6 +374,7 @@ document.getElementById('form-project').addEventListener('submit', async e => {
     const data = {
         name:    document.getElementById('proj-name').value.trim(),
         client:  document.getElementById('proj-client').value.trim(),
+        location: document.getElementById('proj-location').value,
         revenue: revenue,
         clientAdvance: parseFloat(document.getElementById('proj-client-advance').value) || 0,
         cost:    parseFloat(document.getElementById('proj-cost').value) || 0,
@@ -406,6 +407,7 @@ function editProject(id) {
     document.getElementById('proj-doc-id').value = id;
     document.getElementById('proj-name').value   = p.name    || '';
     document.getElementById('proj-client').value = p.client  || '';
+    document.getElementById('proj-location').value = p.location || 'domestic';
     document.getElementById('proj-revenue').value= p.revenue || 0;
     document.getElementById('proj-client-advance').value= p.clientAdvance || 0;
     document.getElementById('proj-cost').value   = p.cost    || 0;
@@ -465,13 +467,16 @@ function renderProjects() {
             </div>`;
         }
 
+        const isIntl = p.location === 'international';
+        const locBadge = isIntl ? '🌍 Intl' : '🇻🇳 VN';
+
         const card = document.createElement('div');
         card.className = 'project-card';
         card.innerHTML = `
             <div class="proj-card-header">
                 <div>
                     <div class="proj-name">${p.name}</div>
-                    <div class="proj-client">${p.client ? `👤 ${p.client}` : 'No client'}</div>
+                    <div class="proj-client">${p.client ? `👤 ${p.client}` : 'No client'} <span style="font-size:10px; padding:2px 4px; background:var(--bg-secondary); border-radius:4px; margin-left:4px">${locBadge}</span></div>
                     ${p.desc ? `<div style="font-size:12px;color:var(--c-muted);margin-top:4px">${p.desc}</div>` : ''}
                     ${advanceHtml}
                 </div>
@@ -562,7 +567,6 @@ function renderDashboard() {
 function renderTaxReport() {
     const tbody = document.getElementById('tax-report-tbody');
     if (!tbody) return;
-    const taxRate = parseFloat(document.getElementById('tax-rate-select').value) / 100;
 
     // Group projects by year
     const yearlyData = {};
@@ -575,36 +579,43 @@ function renderTaxReport() {
         }
         
         if (!yearlyData[year]) {
-            yearlyData[year] = { rev: 0, adv: 0, taxable: 0 };
+            yearlyData[year] = { domTaxable: 0, domTax: 0, intlTaxable: 0, intlTax: 0 };
         }
         
         const rev = p.revenue || 0;
         const adv = p.clientAdvance || 0;
-        yearlyData[year].rev += rev;
-        yearlyData[year].adv += adv;
-        // Taxable Service Income = Total Revenue - Material Advance
-        yearlyData[year].taxable += Math.max(0, rev - adv);
+        
+        if (p.location === 'international') {
+            const taxable = rev;
+            yearlyData[year].intlTaxable += taxable;
+            yearlyData[year].intlTax += taxable * 0.07;
+        } else {
+            const taxable = Math.max(0, rev - adv);
+            yearlyData[year].domTaxable += taxable;
+            yearlyData[year].domTax += taxable * 0.10;
+        }
     });
 
     tbody.innerHTML = '';
     const years = Object.keys(yearlyData).sort((a,b) => b.localeCompare(a)); // desc
     
     if (years.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--c-muted)">No data available for tax reporting</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--c-muted)">No data available for tax reporting</td></tr>`;
         return;
     }
 
     years.forEach(y => {
         const d = yearlyData[y];
-        const taxAmt = d.taxable * taxRate;
+        const totalTax = d.domTax + d.intlTax;
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${y}</strong></td>
-            <td>${fmt(d.rev)}</td>
-            <td style="color:var(--c-red)">-${fmt(d.adv)}</td>
-            <td style="font-weight:bold; color:var(--c-blue)">${fmt(d.taxable)}</td>
-            <td style="font-weight:bold; color:var(--c-orange)">${fmt(taxAmt)}</td>
+            <td>${fmt(d.domTaxable)}</td>
+            <td style="color:var(--c-orange)">${fmt(d.domTax)}</td>
+            <td>${fmt(d.intlTaxable)}</td>
+            <td style="color:var(--c-orange)">${fmt(d.intlTax)}</td>
+            <td style="font-weight:bold; color:var(--c-red)">${fmt(totalTax)}</td>
         `;
         tbody.appendChild(tr);
     });
