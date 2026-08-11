@@ -736,7 +736,7 @@ document.getElementById('btn-confirm-delete').addEventListener('click', () => {
 });
 
 // =============================================
-// PAYMENT HISTORY
+// PAYMENT HISTORY + WITHDRAWALS
 // =============================================
 let currentPayProjectId = null;
 
@@ -745,16 +745,22 @@ function openPaymentsModal(projectId) {
     const p = projectsData.find(x => x.id === projectId);
     if (!p) return;
 
-    document.getElementById('pay-proj-name').textContent = `📁 ${p.name}${p.client ? ' · ' + p.client : ''}`;
+    document.getElementById('pay-proj-name').textContent =
+        `📁 ${p.name}${p.client ? ' · ' + p.client : ''}`;
 
-    // Default date to today
+    // Default dates to today
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('pay-date').value  = today;
+    document.getElementById('pay-date').value   = today;
     document.getElementById('pay-amount').value = '';
     document.getElementById('pay-note').value   = '';
     document.getElementById('pay-type').value   = 'labor';
+    document.getElementById('wd-date').value    = today;
+    document.getElementById('wd-amount').value  = '';
+    document.getElementById('wd-desc').value    = '';
+    document.getElementById('wd-note').value    = '';
 
     renderPayments(projectId);
+    renderWithdrawals(projectId);
     openModal('modal-payments');
 }
 
@@ -762,48 +768,82 @@ function renderPayments(projectId) {
     const p = projectsData.find(x => x.id === projectId);
     if (!p) return;
 
-    const payments = (p.payments || []).slice().sort((a, b) => a.date > b.date ? -1 : 1);
-    const contract  = p.revenue || 0;
-    const received  = payments.reduce((s, pay) => s + (pay.amount || 0), 0);
-    const remaining = contract - received;
-    const pct = contract > 0 ? Math.min(100, (received / contract) * 100) : 0;
+    const payments     = (p.payments     || []).slice().sort((a, b) => a.date > b.date ? -1 : 1);
+    const withdrawals  = (p.withdrawals  || []);
+    const contract     = p.revenue || 0;
+    const received     = payments.reduce((s, pay) => s + (pay.amount || 0), 0);
+    const spent        = withdrawals.reduce((s, w) => s + (w.amount || 0), 0);
+    const cashOnHand   = received - spent;
+    const pct          = contract > 0 ? Math.min(100, (received / contract) * 100) : 0;
 
-    // Summary
-    document.getElementById('pay-total-contract').textContent  = fmt(contract);
-    document.getElementById('pay-total-received').textContent  = fmt(received);
+    // Summary bar
+    document.getElementById('pay-total-contract').textContent = fmt(contract);
+    document.getElementById('pay-total-received').textContent = fmt(received);
+    document.getElementById('pay-total-spent').textContent    = fmt(spent);
 
-    const remEl = document.getElementById('pay-total-remaining');
-    remEl.textContent = fmt(Math.abs(remaining));
-    remEl.className   = 'pay-sum-val ' + (remaining < 0 ? 'red' : remaining === 0 ? 'green' : 'orange');
+    const cashEl = document.getElementById('pay-cash-on-hand');
+    cashEl.textContent = fmt(Math.abs(cashOnHand));
+    cashEl.className   = 'pay-sum-val ' + (cashOnHand < 0 ? 'red' : cashOnHand === 0 ? 'green' : 'orange');
 
     // Progress bar
     document.getElementById('pay-progress-bar').style.width = pct + '%';
 
-    // List
+    // Payments list
     const tbody  = document.getElementById('pay-tbody');
     const emptyR = document.getElementById('pay-empty-row');
     Array.from(tbody.querySelectorAll('tr.pay-row')).forEach(r => r.remove());
 
     if (payments.length === 0) {
         emptyR.style.display = '';
+    } else {
+        emptyR.style.display = 'none';
+        payments.forEach(pay => {
+            const isLabor   = pay.type !== 'material';
+            const typeClass = isLabor ? 'pay-type-labor' : 'pay-type-material';
+            const typeLabel = isLabor ? '💼 Labor Fee' : '🔩 Material Advance';
+            const tr = document.createElement('tr');
+            tr.className = 'pay-row';
+            tr.innerHTML = `
+                <td style="white-space:nowrap;color:var(--c-muted);font-size:12px;">${pay.date || '—'}</td>
+                <td><span class="badge ${typeClass}" style="border-radius:6px;font-size:11px;">${typeLabel}</span></td>
+                <td style="font-weight:600;color:${isLabor ? 'var(--c-blue)' : 'var(--c-orange)'}">${fmt(pay.amount)}</td>
+                <td style="color:var(--c-muted);font-size:12px;">${pay.note || '—'}</td>
+                <td>
+                    <button class="btn-icon delete" onclick="deletePayment('${projectId}','${pay.id}')" title="Remove">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+function renderWithdrawals(projectId) {
+    const p = projectsData.find(x => x.id === projectId);
+    if (!p) return;
+
+    const withdrawals = (p.withdrawals || []).slice().sort((a, b) => a.date > b.date ? -1 : 1);
+    const tbody  = document.getElementById('wd-tbody');
+    const emptyR = document.getElementById('wd-empty-row');
+    Array.from(tbody.querySelectorAll('tr.wd-row')).forEach(r => r.remove());
+
+    if (withdrawals.length === 0) {
+        emptyR.style.display = '';
         return;
     }
     emptyR.style.display = 'none';
 
-    payments.forEach(pay => {
-        const isLabor = pay.type !== 'material';
-        const typeClass = isLabor ? 'pay-type-labor' : 'pay-type-material';
-        const typeLabel = isLabor ? '💼 Tiền công' : '🔩 Linh kiện';
-
+    withdrawals.forEach(w => {
         const tr = document.createElement('tr');
-        tr.className = 'pay-row';
+        tr.className = 'wd-row';
         tr.innerHTML = `
-            <td style="white-space:nowrap;color:var(--c-muted);font-size:12px;">${pay.date || '—'}</td>
-            <td><span class="badge ${typeClass}" style="border-radius:6px;font-size:11px;">${typeLabel}</span></td>
-            <td style="font-weight:600;color:${isLabor ? 'var(--c-blue)' : 'var(--c-orange)'}">${fmt(pay.amount)}</td>
-            <td style="color:var(--c-muted);font-size:12px;">${pay.note || '—'}</td>
+            <td style="white-space:nowrap;color:var(--c-muted);font-size:12px;">${w.date || '—'}</td>
+            <td style="font-weight:500;">${w.desc || '—'}</td>
+            <td style="font-weight:600;color:var(--c-orange)">${fmt(w.amount)}</td>
+            <td style="color:var(--c-muted);font-size:12px;">${w.note || '—'}</td>
             <td>
-                <button class="btn-icon delete" onclick="deletePayment('${projectId}','${pay.id}')" title="Xóa đợt này">
+                <button class="btn-icon delete" onclick="deleteWithdrawal('${projectId}','${w.id}')" title="Remove">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
@@ -812,17 +852,18 @@ function renderPayments(projectId) {
     });
 }
 
+// ── Add Payment ──
 document.getElementById('btn-add-payment').addEventListener('click', async () => {
     if (!currentPayProjectId) return;
     const amount = parseFloat(document.getElementById('pay-amount').value);
     if (!amount || amount <= 0) {
-        toast('Vui lòng nhập số tiền hợp lệ!', 'error');
+        toast('Please enter a valid amount!', 'error');
         return;
     }
 
     const btn = document.getElementById('btn-add-payment');
-    btn.textContent = 'Đang lưu…';
-    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+    btn.disabled  = true;
 
     const newPayment = {
         id:     crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36),
@@ -832,49 +873,110 @@ document.getElementById('btn-add-payment').addEventListener('click', async () =>
         note:   document.getElementById('pay-note').value.trim()
     };
 
-    const p = projectsData.find(x => x.id === currentPayProjectId);
-    const existing = p?.payments || [];
-    const updated  = [...existing, newPayment];
+    const p       = projectsData.find(x => x.id === currentPayProjectId);
+    const updated = [...(p?.payments || []), newPayment];
 
     try {
         await db.collection('projects').doc(currentPayProjectId).update({ payments: updated });
-        toast('Đã thêm đợt thanh toán!');
+        toast('Payment recorded!');
         document.getElementById('pay-amount').value = '';
         document.getElementById('pay-note').value   = '';
     } catch (err) {
-        toast('Lỗi: ' + err.message, 'error');
+        toast('Error: ' + err.message, 'error');
     } finally {
-        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Thêm đợt';
-        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Payment';
+        btn.disabled  = false;
     }
 });
 
+// ── Delete Payment ──
 async function deletePayment(projectId, paymentId) {
     const p = projectsData.find(x => x.id === projectId);
     if (!p) return;
     const updated = (p.payments || []).filter(pay => pay.id !== paymentId);
     try {
         await db.collection('projects').doc(projectId).update({ payments: updated });
-        toast('Đã xóa đợt thanh toán.', 'info');
+        toast('Payment removed.', 'info');
     } catch (err) {
-        toast('Lỗi: ' + err.message, 'error');
+        toast('Error: ' + err.message, 'error');
     }
 }
 
-// Re-render payment list when Firestore updates (modal already open)
-const origProjectsSnapshot = db.collection('projects').orderBy('createdAt', 'desc').onSnapshot;
+// ── Add Withdrawal ──
+document.getElementById('btn-add-withdrawal').addEventListener('click', async () => {
+    if (!currentPayProjectId) return;
+    const amount = parseFloat(document.getElementById('wd-amount').value);
+    if (!amount || amount <= 0) {
+        toast('Please enter a valid amount!', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btn-add-withdrawal');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+    btn.disabled  = true;
+
+    const newWithdrawal = {
+        id:     crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36),
+        date:   document.getElementById('wd-date').value || new Date().toISOString().split('T')[0],
+        amount: amount,
+        desc:   document.getElementById('wd-desc').value.trim(),
+        note:   document.getElementById('wd-note').value.trim()
+    };
+
+    const p            = projectsData.find(x => x.id === currentPayProjectId);
+    const updatedWd    = [...(p?.withdrawals || []), newWithdrawal];
+    const newTotalCost = updatedWd.reduce((s, w) => s + (w.amount || 0), 0);
+
+    try {
+        // Save withdrawals + auto-update Material Cost
+        await db.collection('projects').doc(currentPayProjectId).update({
+            withdrawals: updatedWd,
+            cost: newTotalCost
+        });
+        toast('Purchase logged! Material Cost updated.');
+        document.getElementById('wd-amount').value = '';
+        document.getElementById('wd-desc').value   = '';
+        document.getElementById('wd-note').value   = '';
+    } catch (err) {
+        toast('Error: ' + err.message, 'error');
+    } finally {
+        btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Log Purchase';
+        btn.disabled  = false;
+    }
+});
+
+// ── Delete Withdrawal ──
+async function deleteWithdrawal(projectId, withdrawalId) {
+    const p = projectsData.find(x => x.id === projectId);
+    if (!p) return;
+    const updatedWd    = (p.withdrawals || []).filter(w => w.id !== withdrawalId);
+    const newTotalCost = updatedWd.reduce((s, w) => s + (w.amount || 0), 0);
+    try {
+        await db.collection('projects').doc(projectId).update({
+            withdrawals: updatedWd,
+            cost: newTotalCost
+        });
+        toast('Purchase removed.', 'info');
+    } catch (err) {
+        toast('Error: ' + err.message, 'error');
+    }
+}
 
 // Patch: after projectsData updates, re-render payment modal if open
 function maybeRefreshPaymentsModal() {
     if (currentPayProjectId && document.getElementById('modal-payments').classList.contains('active')) {
         renderPayments(currentPayProjectId);
+        renderWithdrawals(currentPayProjectId);
     }
 }
 
 // Expose to inline onclick handlers
-window.editItem          = editItem;
-window.deleteItem        = deleteItem;
-window.editProject       = editProject;
-window.deleteProject     = deleteProject;
-window.openPaymentsModal = openPaymentsModal;
-window.deletePayment     = deletePayment;
+window.editItem           = editItem;
+window.deleteItem         = deleteItem;
+window.editProject        = editProject;
+window.deleteProject      = deleteProject;
+window.openPaymentsModal  = openPaymentsModal;
+window.deletePayment      = deletePayment;
+window.deleteWithdrawal   = deleteWithdrawal;
+
+

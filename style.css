@@ -963,3 +963,49 @@ form input:focus, form select:focus { border-color: var(--c-blue); }
 
 .pay-received-badge.partial { background: rgba(227,179,65,.15); color: var(--c-orange); }
 .pay-received-badge.none    { background: var(--c-red-dim); color: var(--c-red); }
+
+/* 4-column summary bar */
+.pay-summary-bar-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Section divider header */
+.pay-section-header {
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--c-muted);
+    background: var(--c-surface2);
+    border-bottom: 1px solid var(--c-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Withdrawal / Log Purchase button (orange accent) */
+.btn-withdrawal {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: rgba(227,179,65,.18);
+    color: var(--c-orange);
+    border: 1px solid rgba(227,179,65,.35);
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+
+.btn-withdrawal:hover {
+    background: rgba(227,179,65,.28);
+    box-shadow: 0 4px 14px rgba(227,179,65,.2);
+    transform: translateY(-1px);
+}
+
