@@ -498,7 +498,7 @@ function renderProjects() {
                         ${typeBadge}
                     </div>
                     <div class="proj-actions" style="margin-top:8px;justify-content:flex-end">
-                        <button class="btn-payments" onclick="openPaymentsModal('${p.id}')" title="Lịch sử thanh toán">
+                        <button class="btn-payments" onclick="openPaymentsModal('${p.id}')" title="Payment History">
                             <i class="fa-solid fa-money-bill-wave"></i>
                             <span class="pay-received-badge ${payBadgeClass}">${payBadgeText}</span>
                         </button>
@@ -513,19 +513,19 @@ function renderProjects() {
             </div>
             <div class="proj-finances">
                 <div class="fin-row">
-                    <span class="label">Doanh thu HĐ</span>
+                    <span class="label">Contract Revenue</span>
                     <span class="value" style="color:var(--c-green)">${fmt(p.revenue)}</span>
                 </div>
                 <div class="fin-row">
-                    <span class="label">Đã nhận</span>
+                    <span class="label">Received</span>
                     <span class="value" style="color:var(--c-blue)">${fmt(received)}</span>
                 </div>
                 <div class="fin-row">
-                    <span class="label">Chi phí linh kiện</span>
+                    <span class="label">Material Cost</span>
                     <span class="value" style="color:var(--c-red)">${fmt(p.cost)}</span>
                 </div>
                 <div class="fin-row profit">
-                    <span class="label">Lợi nhuận</span>
+                    <span class="label">Profit</span>
                     <span class="value ${profit < 0 ? 'negative' : ''}">${fmt(profit)}</span>
                 </div>
             </div>
