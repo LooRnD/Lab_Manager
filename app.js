@@ -355,6 +355,7 @@ db.collection('projects').orderBy('createdAt', 'desc').onSnapshot(snap => {
     renderProjects();
     renderDashboard();
     renderReports();
+    maybeRefreshPaymentsModal();
 });
 
 // Add project button
@@ -453,8 +454,7 @@ function renderProjects() {
 
     data.forEach(p => {
         const profit = (p.revenue || 0) - (p.cost || 0);
-        const vat    = p.vatAmt || 0;
-        
+
         let typeBadge = '';
         if (p.type === 'hourly') typeBadge = '<span class="badge badge-hourly"><i class="fa-solid fa-clock"></i> Hourly</span>';
         else if (p.type === 'parttime') typeBadge = '<span class="badge badge-parttime"><i class="fa-solid fa-calendar-week"></i> Part-time</span>';
@@ -469,6 +469,18 @@ function renderProjects() {
 
         const isIntl = p.location === 'international';
         const locBadge = isIntl ? '🌍 Intl' : '🇻🇳 VN';
+
+        // Payment badge
+        const payments   = p.payments || [];
+        const received   = payments.reduce((s, pay) => s + (pay.amount || 0), 0);
+        const contract   = p.revenue || 0;
+        const pct        = contract > 0 ? Math.round((received / contract) * 100) : 0;
+        let payBadgeClass = 'none';
+        if (received > 0 && received < contract) payBadgeClass = 'partial';
+        else if (received >= contract && contract > 0) payBadgeClass = '';
+        const payBadgeText = payments.length > 0
+            ? `${payments.length} đợt · ${pct}%`
+            : 'Thêm đợt';
 
         const card = document.createElement('div');
         card.className = 'project-card';
@@ -486,6 +498,10 @@ function renderProjects() {
                         ${typeBadge}
                     </div>
                     <div class="proj-actions" style="margin-top:8px;justify-content:flex-end">
+                        <button class="btn-payments" onclick="openPaymentsModal('${p.id}')" title="Lịch sử thanh toán">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                            <span class="pay-received-badge ${payBadgeClass}">${payBadgeText}</span>
+                        </button>
                         <button class="btn-icon edit" onclick="editProject('${p.id}')" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </button>
@@ -497,15 +513,19 @@ function renderProjects() {
             </div>
             <div class="proj-finances">
                 <div class="fin-row">
-                    <span class="label">Revenue</span>
+                    <span class="label">Doanh thu HĐ</span>
                     <span class="value" style="color:var(--c-green)">${fmt(p.revenue)}</span>
                 </div>
                 <div class="fin-row">
-                    <span class="label">Cost</span>
+                    <span class="label">Đã nhận</span>
+                    <span class="value" style="color:var(--c-blue)">${fmt(received)}</span>
+                </div>
+                <div class="fin-row">
+                    <span class="label">Chi phí linh kiện</span>
                     <span class="value" style="color:var(--c-red)">${fmt(p.cost)}</span>
                 </div>
                 <div class="fin-row profit">
-                    <span class="label">Profit</span>
+                    <span class="label">Lợi nhuận</span>
                     <span class="value ${profit < 0 ? 'negative' : ''}">${fmt(profit)}</span>
                 </div>
             </div>
@@ -715,8 +735,146 @@ document.getElementById('btn-confirm-delete').addEventListener('click', () => {
     if (deleteCallback) deleteCallback();
 });
 
+// =============================================
+// PAYMENT HISTORY
+// =============================================
+let currentPayProjectId = null;
+
+function openPaymentsModal(projectId) {
+    currentPayProjectId = projectId;
+    const p = projectsData.find(x => x.id === projectId);
+    if (!p) return;
+
+    document.getElementById('pay-proj-name').textContent = `📁 ${p.name}${p.client ? ' · ' + p.client : ''}`;
+
+    // Default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pay-date').value  = today;
+    document.getElementById('pay-amount').value = '';
+    document.getElementById('pay-note').value   = '';
+    document.getElementById('pay-type').value   = 'labor';
+
+    renderPayments(projectId);
+    openModal('modal-payments');
+}
+
+function renderPayments(projectId) {
+    const p = projectsData.find(x => x.id === projectId);
+    if (!p) return;
+
+    const payments = (p.payments || []).slice().sort((a, b) => a.date > b.date ? -1 : 1);
+    const contract  = p.revenue || 0;
+    const received  = payments.reduce((s, pay) => s + (pay.amount || 0), 0);
+    const remaining = contract - received;
+    const pct = contract > 0 ? Math.min(100, (received / contract) * 100) : 0;
+
+    // Summary
+    document.getElementById('pay-total-contract').textContent  = fmt(contract);
+    document.getElementById('pay-total-received').textContent  = fmt(received);
+
+    const remEl = document.getElementById('pay-total-remaining');
+    remEl.textContent = fmt(Math.abs(remaining));
+    remEl.className   = 'pay-sum-val ' + (remaining < 0 ? 'red' : remaining === 0 ? 'green' : 'orange');
+
+    // Progress bar
+    document.getElementById('pay-progress-bar').style.width = pct + '%';
+
+    // List
+    const tbody  = document.getElementById('pay-tbody');
+    const emptyR = document.getElementById('pay-empty-row');
+    Array.from(tbody.querySelectorAll('tr.pay-row')).forEach(r => r.remove());
+
+    if (payments.length === 0) {
+        emptyR.style.display = '';
+        return;
+    }
+    emptyR.style.display = 'none';
+
+    payments.forEach(pay => {
+        const isLabor = pay.type !== 'material';
+        const typeClass = isLabor ? 'pay-type-labor' : 'pay-type-material';
+        const typeLabel = isLabor ? '💼 Tiền công' : '🔩 Linh kiện';
+
+        const tr = document.createElement('tr');
+        tr.className = 'pay-row';
+        tr.innerHTML = `
+            <td style="white-space:nowrap;color:var(--c-muted);font-size:12px;">${pay.date || '—'}</td>
+            <td><span class="badge ${typeClass}" style="border-radius:6px;font-size:11px;">${typeLabel}</span></td>
+            <td style="font-weight:600;color:${isLabor ? 'var(--c-blue)' : 'var(--c-orange)'}">${fmt(pay.amount)}</td>
+            <td style="color:var(--c-muted);font-size:12px;">${pay.note || '—'}</td>
+            <td>
+                <button class="btn-icon delete" onclick="deletePayment('${projectId}','${pay.id}')" title="Xóa đợt này">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+document.getElementById('btn-add-payment').addEventListener('click', async () => {
+    if (!currentPayProjectId) return;
+    const amount = parseFloat(document.getElementById('pay-amount').value);
+    if (!amount || amount <= 0) {
+        toast('Vui lòng nhập số tiền hợp lệ!', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btn-add-payment');
+    btn.textContent = 'Đang lưu…';
+    btn.disabled = true;
+
+    const newPayment = {
+        id:     crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36),
+        date:   document.getElementById('pay-date').value || new Date().toISOString().split('T')[0],
+        type:   document.getElementById('pay-type').value,
+        amount: amount,
+        note:   document.getElementById('pay-note').value.trim()
+    };
+
+    const p = projectsData.find(x => x.id === currentPayProjectId);
+    const existing = p?.payments || [];
+    const updated  = [...existing, newPayment];
+
+    try {
+        await db.collection('projects').doc(currentPayProjectId).update({ payments: updated });
+        toast('Đã thêm đợt thanh toán!');
+        document.getElementById('pay-amount').value = '';
+        document.getElementById('pay-note').value   = '';
+    } catch (err) {
+        toast('Lỗi: ' + err.message, 'error');
+    } finally {
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Thêm đợt';
+        btn.disabled = false;
+    }
+});
+
+async function deletePayment(projectId, paymentId) {
+    const p = projectsData.find(x => x.id === projectId);
+    if (!p) return;
+    const updated = (p.payments || []).filter(pay => pay.id !== paymentId);
+    try {
+        await db.collection('projects').doc(projectId).update({ payments: updated });
+        toast('Đã xóa đợt thanh toán.', 'info');
+    } catch (err) {
+        toast('Lỗi: ' + err.message, 'error');
+    }
+}
+
+// Re-render payment list when Firestore updates (modal already open)
+const origProjectsSnapshot = db.collection('projects').orderBy('createdAt', 'desc').onSnapshot;
+
+// Patch: after projectsData updates, re-render payment modal if open
+function maybeRefreshPaymentsModal() {
+    if (currentPayProjectId && document.getElementById('modal-payments').classList.contains('active')) {
+        renderPayments(currentPayProjectId);
+    }
+}
+
 // Expose to inline onclick handlers
-window.editItem     = editItem;
-window.deleteItem   = deleteItem;
-window.editProject  = editProject;
-window.deleteProject = deleteProject;
+window.editItem          = editItem;
+window.deleteItem        = deleteItem;
+window.editProject       = editProject;
+window.deleteProject     = deleteProject;
+window.openPaymentsModal = openPaymentsModal;
+window.deletePayment     = deletePayment;
