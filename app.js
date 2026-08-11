@@ -479,8 +479,8 @@ function renderProjects() {
         if (received > 0 && received < contract) payBadgeClass = 'partial';
         else if (received >= contract && contract > 0) payBadgeClass = '';
         const payBadgeText = payments.length > 0
-            ? `${payments.length} đợt · ${pct}%`
-            : 'Thêm đợt';
+            ? `${payments.length} pmts · ${pct}%`
+            : 'Add payment';
 
         const card = document.createElement('div');
         card.className = 'project-card';
